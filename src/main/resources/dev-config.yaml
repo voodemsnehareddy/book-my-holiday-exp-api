@@ -1,9 +1,9 @@
 flightRequestProcess:
-  host: "indigo-flights-proc-api.us-e2.cloudhub.io"
-  client_id: "dejfgjehf"
-  client_secret: "dvjshgds"
-  
+  host: "![if0Gco+lUmVmMuZKHhNwTnclMi6B8pBYULERilPQG1WQJ3Khc58mDjX+1HRZPusk]"
+  client_id: "![ETLjdPwVhSKbJiXpEVvJfey83c7XAWUDtreskr92scKt0SU5cg2F1g==]"
+  client_secret: "![Zyem5hqATTyCd6uUfRZheTq1l2cyfHmeRXKXE1xdaDHt2J322noWzA==]"
+
 carRequestProcess:
-  host: "cars-booking-proc-api.us-e2.cloudhub.io"
-  client_id: "dejfgjehf"
-  client_secret: "dvjshgds"
+  host: "![hILtf1bGCnMpj8CxKFmAhoBYc2/5PIxeAHTYKyB9sP5T43InjomYeg==]"
+  client_id: "![as+6NWwB4i/ciMoYdIy7eA==]"
+  client_secret: "![ExoYpR4oOOBoZfbl33yq4A==]"

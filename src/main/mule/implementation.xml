@@ -6,7 +6,7 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f0687ee9-d92f-4443-bd98-39198040d9bd" >
-		<http:request-connection host="${carRequestProcess.host}" />
+		<http:request-connection host="${secure::carRequestProcess.host}" />
 	</http:request-config>
 	<flow name="bookMyHolidayFlights" doc:id="a8e8ea29-9d44-4692-8a17-f96ec6890ca4" >
 		<logger level="INFO" doc:name="Request Received" doc:id="1353ff4e-d51e-49f6-b085-7fa6003f5434" message="#['Request received for bookMyHolidayFlights Flow']"/>
@@ -19,8 +19,8 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 						<http:headers><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "adhsdgjs",
-	"client_id" : "scvjshdgjsa"
+	"client_secret" : "${secure::flightRequestProcess.client_secret}",
+	"client_id" : "${secure::flightRequestProcess.client_id}"
 }]]]></http:headers>
 					</http:request>
 					<ee:transform doc:name="Filter Data based on QueryParams" doc:id="ca150c82-7459-4649-856f-61f087cb9d71">
@@ -74,8 +74,8 @@ else
 						<http:headers ><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "${flightRequestProcess.client_secret}",
-	"client_id" : "${flightRequestProcess.client_id}"
+	"client_secret" : "${secure::flightRequestProcess.client_secret}",
+	"client_id" : "${secure::flightRequestProcess.client_id}"
 }]]]></http:headers>
 					</http:request>
 					<error-handler>
@@ -108,8 +108,8 @@ else
 			<http:headers ><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "${flightRequestProcess.client_secret}",
-	"client_id" : "{flightRequestProcess.client_id}"
+	"client_secret" : "${secure::flightRequestProcess.client_secret}",
+	"client_id" : "{secure::flightRequestProcess.client_id}"
 }]]]></http:headers>
 				<http:uri-params><![CDATA[#[output application/java
 ---
@@ -134,8 +134,8 @@ else
 			<http:headers><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "${carRequestProcess.client_secret}",
-	"client_id" : "${carRequestProcess.client_id}"
+	"client_secret" : "${secure::carRequestProcess.client_secret}",
+	"client_id" : "${secure::carRequestProcess.client_id}"
 }]]]></http:headers>
 		</http:request>
 					<ee:transform doc:name="Provider Mapping" doc:id="6fc1568e-aee7-4b99-948f-0bd8936c659a">
@@ -197,8 +197,8 @@ filterResult()]]></ee:set-payload>
 			<http:headers><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "${carRequestProcess.client_secret}",
-	"client_id" : "${carRequestProcess.client_id}"
+	"client_secret" : "${secure::carRequestProcess.client_secret}",
+	"client_id" : "${secure::carRequestProcess.client_id}"
 }]]]></http:headers>
 		</http:request>
 					<error-handler >
@@ -229,8 +229,8 @@ filterResult()]]></ee:set-payload>
 					<http:headers><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "${carRequestProcess.client_secret}",
-	"client_id" : "${carRequestProcess.client_id}"
+	"client_secret" : "${secure::carRequestProcess.client_secret}",
+	"client_id" : "${secure::carRequestProcess.client_id}"
 }]]]></http:headers>
 				</http:request>
 					<ee:transform doc:name="Customer Mapping" doc:id="b0426ec3-be17-4f17-8afc-8770d84be965">
@@ -292,8 +292,8 @@ filterResult()]]></ee:set-payload>
 					<http:headers><![CDATA[#[output application/java
 ---
 {
-	"client_secret" : "${carRequestProcess.client_secret}",
-	"client_id" : "${carRequestProcess.client_id}"
+	"client_secret" : "${secure::carRequestProcess.client_secret}",
+	"client_id" : "${secure::carRequestProcess.client_id}"
 }]]]></http:headers>
 				</http:request>
 					<error-handler >
