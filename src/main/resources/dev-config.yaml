@@ -1,0 +1,9 @@
+flightRequestProcess:
+  host: "indigo-flights-proc-api.us-e2.cloudhub.io"
+  client_id: "dejfgjehf"
+  client_secret: "dvjshgds"
+  
+carRequestProcess:
+  host: "cars-booking-proc-api.us-e2.cloudhub.io"
+  client_id: "dejfgjehf"
+  client_secret: "dvjshgds"

@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f0687ee9-d92f-4443-bd98-39198040d9bd" >
+		<http:request-connection host="${carRequestProcess.host}" />
+	</http:request-config>
+	<flow name="bookMyHolidayFlights" doc:id="a8e8ea29-9d44-4692-8a17-f96ec6890ca4" >
+		<logger level="INFO" doc:name="Request Received" doc:id="1353ff4e-d51e-49f6-b085-7fa6003f5434" message="#['Request received for bookMyHolidayFlights Flow']"/>
+		<set-variable value="#[attributes.queryParams.origin]" doc:name="origin" doc:id="a0996d45-911b-40fa-9888-009d97766923" variableName="origin"/>
+		<set-variable value="#[attributes.queryParams.destination]" doc:name="destination" doc:id="17896488-7f9a-4979-9163-75667a74deed" variableName="destination"/>
+		<choice doc:name="Choice" doc:id="2e1d7ab8-9a2a-41db-b163-c33bbb4c61c7" >
+			<when expression="#[attributes.method == 'GET']" >
+				<try doc:name="Try" doc:id="3f5205b9-611a-4ab7-981f-0f413f658f5a">
+					<http:request method="GET" doc:name="Request for GET Flights" doc:id="eff9ae06-4724-4628-af33-b715ee6823f9" config-ref="Flights_Process_HTTP_Request_configuration" path="/api/flights">
+						<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "adhsdgjs",
+	"client_id" : "scvjshdgjsa"
+}]]]></http:headers>
+					</http:request>
+					<ee:transform doc:name="Filter Data based on QueryParams" doc:id="ca150c82-7459-4649-856f-61f087cb9d71">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+if(vars.origin == null and vars.destination == null)
+	payload
+else if(vars.origin == null or vars.destination == null)
+	payload map ((item, index) -> {
+	"ID": item.ID,
+	"code": item.code,
+	"price": item.price,
+	"departureDate": item.departureDate,
+	"origin": item.origin,
+	"destination": item.destination,
+	"emptySeats": item.emptySeats,
+	"plane": {
+		"planeType": item.plane.planeType,
+		"totalSeats": item.plane.totalSeats
+	},
+}) filter ((item, index) -> item.origin == vars.origin or item.destination == vars.destination)
+
+else 
+	payload map ((item, index) -> {
+	"ID": item.ID,
+	"code": item.code,
+	"price": item.price,
+	"departureDate": item.departureDate,
+	"origin": item.origin,
+	"destination": item.destination,
+	"emptySeats": item.emptySeats,
+	"plane": {
+		"planeType": item.plane.planeType,
+		"totalSeats": item.plane.totalSeats
+	},
+}) filter ((item, index) -> item.origin == vars.origin and item.destination == vars.destination)]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<error-handler>
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7a9c1446-0bc8-4f11-a2dc-dbd5ebee6331" type="HTTP:INTERNAL_SERVER_ERROR">
+							<logger level="INFO" doc:name="Logger" doc:id="96a33c4a-0362-4a56-ac3e-e6bb6cf6e62f" message="#['Server is down at the moment. Please try later!']" />
+						</on-error-propagate>
+					</error-handler>
+				</try>
+			</when>
+			<when expression="#[attributes.method == 'POST']" >
+				<try doc:name="Try" doc:id="546e0947-3fea-4dcc-aaf0-512facea46ce">
+					<http:request method="POST" doc:name="Request for Book Flight" doc:id="ea1d02f3-ff4f-4f59-b830-5ebba15c2562" config-ref="Flights_Process_HTTP_Request_configuration" path="/api/flights" >
+						<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "${flightRequestProcess.client_secret}",
+	"client_id" : "${flightRequestProcess.client_id}"
+}]]]></http:headers>
+					</http:request>
+					<error-handler>
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="626b849c-0811-431f-9b4d-7291e17cac6f" type="HTTP:INTERNAL_SERVER_ERROR" >
+							<logger level="INFO" doc:name="Logger" doc:id="e0f68023-336d-404b-b3c4-c414cb558f8f" message="#['Server is down at the moment. Please try later!']" />
+						</on-error-propagate>
+
+					</error-handler>
+				
+</try>
+			
+</when>
+			<otherwise >
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="10ffccfc-c76a-4469-bed1-c0025aab4803" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Response Received" doc:id="3134ce01-3fe7-4d4e-98fc-a1807f6879ab" message="#['Response received for bookMyHolidayFlights']"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="32bb0ac2-dd31-42b4-8c9a-a40118e8f6b1" type="ANY" >
+				<logger level="INFO" doc:name="Logger" doc:id="209d2ede-af33-4455-997e-335ff879bd15" message="#['Sorry the application is under maintenance. Please try again after sometime.']" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="BookMyHolidayGetFlightById" doc:id="84104998-b35e-4af3-8e44-7b0d954846e6" >
+		<logger level="INFO" doc:name="Request Received" doc:id="ea272a84-a45c-4107-b0bf-cacb77749146" message="#['Request received for BookMyHolidayGetFlightById']"/>
+		<set-variable value="#[attributes.uriParams.flightId default 0]" doc:name="Set Variable" doc:id="649f28e4-4639-4b96-af52-0244b3946f0b" variableName="flightId"/>
+		<set-variable value="#['/api/flights/' ++ vars.flightId]" doc:name="Set Variable" doc:id="c99bf184-16d5-418c-bf7b-62529ec9b1be" variableName="flightsByIdURI"/>
+		<try doc:name="Try" doc:id="c86316da-3542-4076-adbc-62f96b026fde" >
+			<http:request method="GET" doc:name="Get request for flight by ID" doc:id="d0bf73b6-8f35-437d-b6ea-190ea16bc45a" config-ref="Flights_Process_HTTP_Request_configuration" path="#[vars.flightsByIdURI]">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "${flightRequestProcess.client_secret}",
+	"client_id" : "{flightRequestProcess.client_id}"
+}]]]></http:headers>
+				<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"flightId" : vars.flightId
+}]]]></http:uri-params>
+		</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6419a389-6e65-4bdf-ad09-b72d3a40a4b4" type="HTTP:INTERNAL_SERVER_ERROR" >
+					<logger level="INFO" doc:name="Logger" doc:id="5612dd5e-a6ce-446c-ade4-118d15d2e202" message="#['Server is down at the moment. Please try later!']" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Response Received" doc:id="3a4f598a-95c4-4494-b062-b27c3f3aaa1e" message="#['Response received for BookMyHolidayGetFlightById']"/>
+	</flow>
+	<flow name="bookMyHolidayCarsProvider" doc:id="2f16d023-c160-4984-b2c1-1304341062fe" >
+		<flow-ref doc:name="Call Query Paramaters" doc:id="25a198d3-57dc-4e1b-9437-35025d2762f0" name="queryParameters"/>
+		<choice doc:name="Choice" doc:id="b14dd342-82d9-4ced-9525-fc46d2deba5d" >
+			<when expression="#[attributes.method == 'GET']">
+				<try doc:name="Try" doc:id="32705bb3-e8cf-4693-8013-cf466d6abd28" >
+					<http:request method="GET" doc:name="Get request for provider cars" doc:id="5fcbaf88-a607-4d83-9bfe-555258c528fc" config-ref="HTTP_Request_configuration" path="/api/cars/provider">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "${carRequestProcess.client_secret}",
+	"client_id" : "${carRequestProcess.client_id}"
+}]]]></http:headers>
+		</http:request>
+					<ee:transform doc:name="Provider Mapping" doc:id="6fc1568e-aee7-4b99-948f-0bd8936c659a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+type currency=String{format: '.00'}
+---
+(payload map (item,index) ->{
+	"id":(index),
+	"name": item.name,
+	"description": item.description,
+	"source":item.source,
+	"destination":item.destination,
+	"carType":item.cartype,
+	"price":item.price as Number as currency,
+	"status":item.status
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<ee:transform doc:name="Payload Filter" doc:id="552368c3-84df-42d8-9e44-f593a7dddf21">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var prv=vars.provider
+var src=vars.source
+var dst=vars.destination
+fun filterResult()=
+if(prv=="" and src=="" and dst=="")
+	payload
+else if(prv=="" and src=="" and !(dst==""))
+	payload filter ((item, index) -> item.destination==dst)
+else if(prv=="" and !(src=="") and dst=="")
+	payload filter ((item, index) -> item.source==src)
+else if(!(prv=="") and src=="" and dst=="")
+	payload filter ((item, index) -> item.name==prv)
+else if(!(prv=="") and src=="" and !(dst==""))
+	payload filter ((item, index) -> item.destination==dst and item.name==prv)
+else if(prv=="" and !(src=="") and !(dst==""))
+	payload filter ((item, index) -> item.source==src and item.destination==dst)
+else if(!(prv=="") and !(src=="") and dst=="")
+	payload filter ((item, index) -> item.source==src and item.name==prv)
+else
+	payload filter ((item, index) -> item.source==src and item.destination==dst and item.name==prv)
+---
+filterResult()]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6c138474-490e-425a-9893-4d29aba7d9cc" type="HTTP:INTERNAL_SERVER_ERROR" >
+							<logger level="INFO" doc:name="Logger" doc:id="f6d51208-55c8-4889-8918-8b1dd692e7b2" message="#['Server is down at the moment. Please try later!']" />
+						</on-error-propagate>
+					</error-handler>
+				</try>
+			</when>
+			<when expression="#[attributes.method == 'POST']">
+				<try doc:name="Try" doc:id="a9f96d0f-4e4e-4288-a77e-9fabad792e72" >
+					<http:request method="POST" doc:name="Post request to book car" doc:id="a80f8dc6-0a44-47d4-a781-5d79940c52dd" config-ref="HTTP_Request_configuration" path="/api/cars/provider">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "${carRequestProcess.client_secret}",
+	"client_id" : "${carRequestProcess.client_id}"
+}]]]></http:headers>
+		</http:request>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="78514649-58ee-4df0-8f42-cfc93615f6ea" type="HTTP:INTERNAL_SERVER_ERROR" >
+							<logger level="INFO" doc:name="Logger" doc:id="5aa13377-614f-482d-8728-b7721bb780fe" message="#['Server is down at the moment. Please try later!']" />
+						</on-error-propagate>
+					</error-handler>
+				</try>
+
+			</when>
+			<otherwise >
+				<set-payload value="#['Invalid Input Parameter']" doc:name="Invalid Input" doc:id="789840bb-f35b-4dbf-97fb-a3d115fa6a22" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Response Received" doc:id="9fd6ba5a-637f-4d63-8d18-131d48575f51" message="#['Response received for bookMyHolidayCarsProvider']"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a714c11a-2649-4a60-b2f1-9fd58c6ca7d8" type="ANY" >
+				<logger level="INFO" doc:name="Logger" doc:id="694184ec-ef12-4147-b12e-9b5121ae24dd" message="#['Sorry the application is under maintenance. Please try again after sometime.']" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="bookMyHolidayCarsCustomer" doc:id="8ededf07-b0dd-44e3-a89a-1e774a888189" >
+		<flow-ref doc:name="Call Query Parameters" doc:id="71540146-3801-4ddb-80aa-83f42381e2c7" name="queryParameters" />
+		<choice doc:name="Choice" doc:id="5c434a85-79df-4c34-91d6-8717944e147f" >
+			<when expression="#[attributes.method == 'GET']" >
+				<try doc:name="Try" doc:id="52b1b175-6de2-4b81-bf57-b8fb8a2ef38e" >
+					<http:request method="GET" doc:name="Get request for customer" doc:id="226ffeb9-63bb-4efc-beb2-4da8876e0c58" config-ref="HTTP_Request_configuration" path="/api/cars/customer">
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "${carRequestProcess.client_secret}",
+	"client_id" : "${carRequestProcess.client_id}"
+}]]]></http:headers>
+				</http:request>
+					<ee:transform doc:name="Customer Mapping" doc:id="b0426ec3-be17-4f17-8afc-8770d84be965">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+type currency=String{format: '.00'}
+---
+(payload map (item,index) ->{
+	"bookingId":(index),
+	"name": item.name,
+	"description": item.description,
+	"source":item.source,
+	"destination":item.destination,
+	"carType":item.cartype,
+	"price":item.price as Number as currency,
+	"status":item.status
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<ee:transform doc:name="Payload Filter" doc:id="70c95480-1a02-45a8-9671-ffeef08d879d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var prv=vars.provider
+var src=vars.source
+var dst=vars.destination
+fun filterResult()=
+if(prv=="" and src=="" and dst=="")
+	payload
+else if(prv=="" and src=="" and !(dst==""))
+	payload filter ((item, index) -> item.destination==dst)
+else if(prv=="" and !(src=="") and dst=="")
+	payload filter ((item, index) -> item.source==src)
+else if(!(prv=="") and src=="" and dst=="")
+	payload filter ((item, index) -> item.description==prv)
+else if(!(prv=="") and src=="" and !(dst==""))
+	payload filter ((item, index) -> item.destination==dst and item.description==prv)
+else if(prv=="" and !(src=="") and !(dst==""))
+	payload filter ((item, index) -> item.source==src and item.destination==dst)
+else if(!(prv=="") and !(src=="") and dst=="")
+	payload filter ((item, index) -> item.source==src and item.description==prv)
+else
+	payload filter ((item, index) -> item.source==src and item.destination==dst and item.description==prv)
+---
+filterResult()]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c3e2b624-e471-4c9d-965e-1c623cae10fd" type="HTTP:INTERNAL_SERVER_ERROR" >
+							<logger level="INFO" doc:name="Logger" doc:id="2368d2a3-2315-461f-b75c-8afec6c1adfe" message="#['Server is down at the moment. Please try later!']" />
+						</on-error-propagate>
+					</error-handler>
+				</try>
+			</when>
+			<when expression="#[attributes.method == 'POST']">
+				<try doc:name="Try" doc:id="9d1a2086-6137-4130-bcc6-582f6697bb49" >
+					<http:request method="POST" doc:name="Post request to book car" doc:id="1283ba34-92a6-4012-b0e9-05e62eb3a865" config-ref="HTTP_Request_configuration" path="/api/cars/customer">
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "${carRequestProcess.client_secret}",
+	"client_id" : "${carRequestProcess.client_id}"
+}]]]></http:headers>
+				</http:request>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c230e1c6-ab34-4f3d-9577-5773c98a1db8" type="HTTP:INTERNAL_SERVER_ERROR" >
+							<logger level="INFO" doc:name="Logger" doc:id="e0f48546-b542-4258-89dd-935b939e6620" message="#['Server is down at the moment. Please try later!']" />
+						</on-error-propagate>
+					</error-handler>
+				</try>
+			</when>
+			<otherwise >
+				<set-payload value="#['Invalid Input Parameter']" doc:name="Invalid Input" doc:id="8b355c46-8ee1-4704-91d8-740f5f6aeefb" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Response Received" doc:id="982b94d8-b4f6-4ebf-a34d-fbf420ea944e" message="#['Response received for bookMyHolidayCarsCustomer']" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2df008e2-6a12-462a-aa09-45cd3854adbc" type="ANY" >
+				<logger level="INFO" doc:name="Logger" doc:id="da26d3f1-aea4-4fc8-9ed1-c94704f61f09" message="#['Sorry the application is under maintenance. Please try again after sometime.']" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="queryParameters" doc:id="5e2de52e-1f2b-41cd-906b-bc8582c97f25">
+		<set-variable value='#[attributes.queryParams.source default ""]' doc:name="source" doc:id="cfed3ab7-cb52-4a7e-a8f6-bc46bc2779f7" variableName="source" />
+		<set-variable value='#[attributes.queryParams.destination default ""]' doc:name="destination" doc:id="aa4f1a59-c8d7-4662-83b1-c15b66dfc53b" variableName="destination" />
+		<set-variable value='#[attributes.queryParams.provider default ""]' doc:name="provider" doc:id="5f9fce9a-8d21-458c-9d7e-9a1ee604a190" variableName="provider" />
+	</flow>
+</mule>

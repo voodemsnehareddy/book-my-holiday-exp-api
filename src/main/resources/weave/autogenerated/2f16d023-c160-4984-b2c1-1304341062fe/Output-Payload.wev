@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_2f16d023_c160_4984_b2c1_1304341062fe_Output_Payload = Array<{  carType: "Mini" | "Micro",   price: Number,   name: "OLA" | "UBER",   destination: "Bengaluru" | "Pune" | "Nashik" | "Mumbai",   description: String,   id?: Number,   source: "Bengaluru" | "Pune" | "Nashik" | "Mumbai",   status: String,   _?: Any}>
+

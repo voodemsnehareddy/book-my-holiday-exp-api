@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="e6840cbd-8fae-49ae-b0e8-e21932e4c654" file="dev-config.yaml" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1ac85706-fe92-422a-9ecd-1407789822b6" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="Flights_Process_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="827165ef-f89a-4360-892b-2b66be827b4b" >
+		<http:request-connection host="${flightRequestProcess.host}" />
+	</http:request-config>
+	<http:request-config name="Car_Process_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="331862f0-6f94-4aa5-9fba-0a963b06d16c" >
+		<http:request-connection host="${carRequestProcess.host}" />
+	</http:request-config>
+</mule>

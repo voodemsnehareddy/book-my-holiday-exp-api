@@ -1,0 +1,29 @@
+%dw 2.0
+
+type auto_a8e8ea29_9d44_4692_8a17_f96ec6890ca4_Input_Attributes = {|
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  headers: {|
+    client_id: String, 
+    client_secret: String
+  |}, 
+  listenerPath: String, 
+  method: String, 
+  queryParams: {|
+    origin?: "DLH" | "HYD" | "MUM" | "CHN" | "BNG" | "CNG", 
+    destination?: "DLH" | "HYD" | "MUM" | "CHN" | "BNG" | "CNG"
+  |}, 
+  queryString: String, 
+  relativePath: String, 
+  remoteAddress: String, 
+  requestPath: String, 
+  requestUri: String, 
+  scheme: String, 
+  uriParams: {|  |}, 
+  version: String, 
+  localAddress: String
+|}
+
